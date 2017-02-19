@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html >
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" type="image/x-icon" href="https://production-assets.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico" />
+  <link rel="mask-icon" type="" href="https://production-assets.codepen.io/assets/favicon/logo-pin-f2d2b6d2c61838f7e76325261b7195c27224080bc099486ddd6dccb469b8e8e6.svg" color="#111" />
+  <title>CodePen - pong game working</title>
+  
+  
+  
+  
+      <style>
+      body{
+  background-color: gold;
+  color: black;
+  text-align: center;
+}
+canvas{
+  margin: 0 auto;
+  background-color: lightblue;
+}
+    </style>
+
+  
+  
+  
+  
+</head>
+
+<body translate="no" >
+
+  <h1>Welcome to pong!</h1>
+<p>use a z j and n</p>
+<canvas id="myCanvas" width="700" height="500">
+  if you see this, your browser does not support HTML5 canvas
+</canvas>
+  
+  
+    <script>
+    //initial setup and vars
+"use strict";
+//variables
+var myCanvas = document.querySelector("#myCanvas");
+var ctx = myCanvas.getContext("2d"); //use 2d graphics
+// set size values
+var height = myCanvas.height;
+var width = myCanvas.width;
+var xSpeed = 2.5;
+var ySpeed = 2.5;
+// paddle size
+var paddleWidth = 25;
+var paddleHeight = 100;
+//track the ball
+var ballX = width / 2;
+var ballY = height / 2;
+var ballsize = 30;
+var ballXSpeed = xSpeed;
+var ballYSpeed = ySpeed;
+//track the scores
+var scoreLeft = 0;
+var scoreRight = 0;
+//track left paddle
+var leftPaddleX = 40;
+var leftPaddleY = (height / 2) - (paddleHeight / 2);
+//track right paddle
+var rightPaddleX = (width - 40 - paddleWidth);
+var rightPaddleY = (height / 2) - (paddleHeight / 2);
+
+//track the size of the play area
+
+//reach out to grab the canvas
+
+// draw paddles and ball to start
+
+drawPaddles();
+drawBall(ballX, ballY, ballsize);
+//main animation loop & controls\\
+window.requestAnimationFrame(animate); // flip one frame
+window.onkeydown = updatePaddles;
+//the main struucture of animatition
+function animate() {
+  ctx.clearRect(0, 0, width, height);
+  // draw all items
+  drawPaddles();
+  drawBall(ballX, ballY, ballsize);
+  drawScore();
+  // update items
+  updateBall();
+  // flip another frame
+  window.requestAnimationFrame(animate);
+}
+
+//helper functions\\
+function drawScore(){
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "navy";
+  ctx.font = "50px Impact";
+  ctx.fillText(scoreLeft, 50, 20);
+  ctx.fillText(scoreRight, width - 50 - 30, 20);
+}
+function resetBall(){
+  ballY = height / 2;
+  ballX = width / 2;
+}
+function drawPaddles() { //draw the paddles
+  //draw the left paddle  
+  ctx.fillStyle = "#D01010";
+  ctx.fillRect(rightPaddleX, rightPaddleY, paddleWidth, paddleHeight);
+  ctx.fillRect(leftPaddleX, leftPaddleY, paddleWidth, paddleHeight);
+}
+function drawBall(x, y, size) {
+  //ctx.fillRect(x, y, size, size);
+  ctx.fillStyle = "#FFFFFF";
+  var path = new Path2D;
+  var rad = size;
+  var startAngle = 0;
+  var endAngle = 2 * Math.PI; // 360 degrees
+  var isAnticlockwise = false; // don't go anti clockwise
+  path.arc(x, y, rad, startAngle, endAngle, isAnticlockwise);
+  ctx.stroke(path);
+  ctx.fill(path)
+}
+
+function updateBall() {
+  // move based on speed
+  var ballL = ballX - ballsize;
+  var ballR = ballX + ballsize;
+  var ballT = ballY - ballsize;
+  var ballB = ballY + ballsize;
+  // bounce of paddle
+  var leftPaddleT = leftPaddleY;
+  var leftPaddleB = leftPaddleY + paddleHeight;
+  var leftPaddleR = leftPaddleX + paddleWidth;
+  var rightPaddleB = rightPaddleY + paddleHeight;
+  var rightPaddleL = rightPaddleX;
+  var rightPaddleT = rightPaddleY;
+  // update
+  ballX += ballXSpeed;
+  ballY += ballYSpeed;
+  if (ballL < 0) {
+    ballXSpeed = xSpeed;
+    scoreRight++
+    resetBall();
+  } else if (ballR > width) {
+    ballXSpeed = -1 * xSpeed;
+    scoreLeft++
+    resetBall();
+  } 
+  // top or bottom
+  if(ballT < 0){
+    ballYSpeed = ySpeed;
+  }
+  else if(ballB > height){
+    ballYSpeed = ySpeed * -1;
+  }
+  if(ballL <= leftPaddleR && ballT >= leftPaddleT && ballY <= leftPaddleB){
+    ballXSpeed = xSpeed;  
+  }
+  if(ballR >= rightPaddleL && ballT <= rightPaddleT && ballY <= rightPaddleB){
+    ballXSpeed = xSpeed * -1;  
+  }
+}
+
+function updatePaddles(event) {
+  var a = 65;
+  var z = 90;
+  var j = 74;
+  var n = 78;
+  // chose the result based on the keycode
+  switch (event.keyCode) {
+    case a:
+      {
+        leftPaddleY -= 7.5;
+        break;
+      }
+    case z:
+      {
+        leftPaddleY += 7.5;
+        break;
+      }
+    case j:
+      {
+        rightPaddleY -= 7.5;
+        break;
+      }
+    case n:
+      {
+        rightPaddleY += 7.5;
+        break;
+      }
+  }
+  if (leftPaddleY < 0) {
+    leftPaddleY = 0;
+  } else if (leftPaddleY > height - paddleHeight) {
+    leftPaddleY = height - paddleHeight;
+  }
+  if (rightPaddleY < 0) {
+    rightPaddleY = 0;
+  } else if (rightPaddleY > height - paddleHeight) {
+    rightPaddleY = height - paddleHeight;
+  }
+}
+  </script>
+
+  
+  
+
+</body>
+</html>
+ 
